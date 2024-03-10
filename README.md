@@ -1,1 +1,1 @@
-# fisica-estadistica
+# Física Estadística

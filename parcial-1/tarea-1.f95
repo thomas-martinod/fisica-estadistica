@@ -1,101 +1,67 @@
-program Thermodynamics
-  implicit none
-  real :: pi, T, P, h, k_B, N_A, R, V, U
-  real, dimension(8) :: molar_masses
-  real, dimension(8) :: degeneracies ! List of degeneracies (ge1)
-  real :: atom_mass, partition_function, element_entropy, element_gibbs
-  integer :: i
-  character(len=26) :: filename
- 
-  ! Constants
-  pi = 3.14159265359                 ! Pi
-  T = 298.0                           ! Standard Temperature (K)
-  P = 1.0E+5                          ! Standard pressure (Pa)
-  h = 6.62607015E-34                 ! Plank's constant (J s)
-  k_B = 1.380649E-23                 ! Boltzmann constant (J / K)
-  N_A = 6.02214076E+23                ! Avogadro's Number (1 / mol)
- 
-  R = k_B * N_A                       ! Ideal gas constant (J / mol K)
-  V = k_B * T / P                     ! Standard volume (m^3)
-  U = (3.0/2.0) * R * T / 1000.0      ! Standard internal energy U_298 (kJ)
- 
-  print*, 'Standard Volume: ', V, 'm^3'
-  print*, 'Standard internal energy:', U, 'kJ'
- 
-  molar_masses = [4.00260128, 20.18004638, 26.98153841, 137.32667172, &
-                   39.94779856, 9.01218306, 79.90432616, 12.01063556] ! List of molar masses of the elements listed (g / mol)
- 
-  degeneracies = [1.0, 1.0, 2.0, 1.0, 1.0, 1.0, 2.0, 1.0]             ! List of degeneracies (ge1)
- 
-  ! Open file for writing results
-  filename = 'thermodynamics-results.csv'
-  open(unit=10, file=filename, status='replace', action='write')
- 
-  ! Write header to the CSV file
-  write(10, '(A, A, A)') 'Element', 'S_298 (J/mol K)', 'G_298 (J/mol)'
+program Punto1
+     integer :: i
+     real, parameter :: pi=3.14159
+     real, parameter :: e=2.71828
+     double precision, parameter :: h=6.62607e-34
+     double precision, parameter :: kb=1.38065e-23
+     double precision :: T, V, G, U, S, N
+     double precision, dimension(8) :: m=(/6.64e-27, 3.35e-26, 4.49e-26, 2.28e-25, 6.63e-26, 1.49e-26, 1.32e-25, 1.99e-26/) !Vector para masa atomica de cada elemento de la tabla
+     double precision, dimension(8) :: Qe=(/1.00, 1.00, 2.00, 1.00, 1.00, 1.00, 2.00, 1.00/) !Vector para estado de ge1 de cada elemento de la tabla
+     double precision:: Gt(8), Ut(8), St(8), Ge(8), Ue(8), Se(8), Gte(8), Ute(8), Ste(8)
+     !m(1)=Helio m(2)=Neon m(3)=Aluminio m(4)=Bario m(5)=Argon m(6)=Berilio m(7)=Bromo m(8)=Carbono
+     T=298
+     N=6.023e23
+     V=4.11e-26 !Volumen calculado por ley de gases ideales y en m^3
    
-  ! Calculate entropy and Gibbs free energy for each element
-  do i = 1, size(molar_masses)
-       ! Calculate mass of atom
-       atom_mass = mass_of_an_atom(molar_masses(i))
-       print*, 'Standard Volume: ', atom_mass
-       
-       ! Calculate translational partition function
-       partition_function = translational_partition(molar_masses(i))
-       print*, 'Standard Volume: ', partition_function
-
-       
-       ! Calculate entropy
-       element_entropy = entropy(partition_function)
-       print*, 'Standard Volume: ', element_entropy
-
-       
-       ! Calculate Gibbs free energy
-       element_gibbs = gibbs(partition_function)
-       print*, 'Standard Volume: ', element_gibbs
-
-
-       ! Write results to the CSV file
-       write(10, '(A, F20.10, F20.10)') 'Element ' // trim(adjustl(int2str(i))), element_entropy, element_gibbs
-  end do
-   
-  ! Close the file
-  close(unit=10)
- 
- contains
- 
-  ! Function to calculate mass of an atom (kg / atom)
-  real function mass_of_an_atom(m)
-       real, intent(in) :: m
-       mass_of_an_atom = m / N_A / 1000.0
-  end function mass_of_an_atom
- 
-  ! Function to calculate translational partition function
-  real function translational_partition(m)
-       real, intent(in) :: m
-       translational_partition = ((2.0 * pi * m * k_B * T) / (h**2))**(3.0/2.0) * V
-  end function translational_partition
- 
-  ! Function to calculate entropy
-  real function entropy(q)
-       real, intent(in) :: q
-       entropy = N_A * ((3.0/2.0) * k_B + k_B * log(q))
-  end function entropy
- 
-  ! Function to calculate Gibbs free energy
-  real function gibbs(q)
-       real, intent(in) :: q
-       gibbs = k_B * T * log(exp(1.0) / q)
-  end function gibbs
- 
-  ! Function to convert integer to string
-  function int2str(i) result(str)
-       integer, intent(in) :: i
-       character(len=:), allocatable :: str
-       character(len=10) :: tmp
-       write(tmp, '(I0)') i
-       str = trim(adjustl(tmp))
-  end function int2str
- 
- end program Thermodynamics
- 
+     !Calculo con la funcion de particion traslacional
+     open(2,file = 'Funcion_Traslacional.dat',status="unknown")
+     write(2,*) "          G", "                          U", "                         S"
+     Do i=1, 8
+       G=8.43e-5*T*(-log((((2*pi*m(i)*kb*T)/(h**2))**(1.5))*V)+1)!Energia libre de Gibs
+       U=N*kb*T*1.5/1000 !Energia interna
+       S=N*((1.5*kb)+(kb*log((((2*pi*m(i)*kb*T)/(h**2))**(1.5))*V))) !Entropia
+       write(2,*) G, U, S
+       Gt(i)=G
+       Ut(i)=u
+       St(i)=S
+       G=0
+       U=0
+       S=0
+     end Do  
+     close(3)
+     G=0
+     U=0
+     S=0
+     !Calculo con la funcion de particion electronica
+     open(3,file = 'Funcion_Electronica.dat',status="unknown")
+     write(3,*) "          G", "                          U", "                         S"
+     Do i=1, 8
+       G=((-kb*T*log(Qe(i)))+(kb*T)) !Energia libre de Gibs
+       U=kb*(T**2)*(1/Qe(i))*10e9 !Energia interna
+       S=N/1000*kb*T*((1/Qe(i))+(kb*log(Qe(i)))) !Entropia
+       write(3,*) G, U, S
+       Ge(i)=G
+       Ue(i)=u
+       Se(i)=S
+       G=0
+       U=0
+       S=0
+     end Do 
+     close(2)
+   !Calculo con la funcion de particion electronica y traslacional
+     open(4,file = 'Funcion_Traslacional+Electronica.dat',status="unknown")
+     write(4,*) "          G", "                          U", "                         S"
+     Do i=1, 8
+       G=8.31e-3*T*log((((((2*pi*m(i)*kb*T)/(h**2))**(1.5))*V)*Qe(i))/N)!Energia libre de Gibs
+       U=Ue(i)+Ut(i) !Energia interna
+       S=Se(i)+St(i)!Entropia
+       write(4,*) G, U, S
+       Gte(i)=G
+       Ute(i)=u
+       Ste(i)=S
+       G=0
+       U=0
+       S=0
+     end Do 
+     close(4)
+     end program Punto1

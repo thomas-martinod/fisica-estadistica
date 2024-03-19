@@ -1,62 +1,64 @@
 import numpy as np
 
-pi = np.pi
-e = np.exp(1)
-h = 6.62607e-34
-kb = 1.38065e-23
+# Constantes
+pi = np.pi                  # Pi
+h = 6.62607015e-34          # Plank's constant (J s)
+k_B = 1.380649e-23          # Boltzmann constant (J / K)
+N_A = 6.02214076e+23        # Avogadro's Number (1 / mol)
+R = k_B * N_A               # Ideal gas constant (J / mol K)
 
-T = 298
-V = 4.11e-26
 
-m = np.array([6.64e-27, 3.35e-26, 4.49e-26, 2.28e-25, 6.63e-26, 1.49e-26, 1.32e-25, 1.99e-26])
-Qe = np.array([1.00, 1.00, 2.00, 1.00, 1.00, 1.00, 2.00, 1.00])
+def mass_of_an_atom(m: float):
+    return m / N_A / 1000  # (kg / atom)
 
-N = 6.023e23
 
-Gt = np.zeros(8)
-Ut = np.zeros(8)
-St = np.zeros(8)
+def translational_partition(m, T, V):
+    return ((2 * pi * m * k_B * T) / (h ** 2)) ** (3 / 2) * V
 
-Ge = np.zeros(8)
-Ue = np.zeros(8)
-Se = np.zeros(8)
 
-Gte = np.zeros(8)
-Ute = np.zeros(8)
-Ste = np.zeros(8)
+def internal_energy(T):
+    return 3 / 2 * R * T
 
-# Calculations with translational partition function
-with open('Funcion_Traslacional.dat', 'w') as f:
-    f.write("          G                          U                         S\n")
-    for i in range(8):
-        G = 8.43e-5 * T * (-np.log((((2 * pi * m[i] * kb * T) / (h ** 2)) ** (1.5)) * V) + 1)
-        U = N * kb * T * 1.5 / 1000
-        S = N * ((1.5 * kb) + (kb * np.log((((2 * pi * m[i] * kb * T) / (h ** 2)) ** (1.5)) * V)))
-        f.write(f"{G} {U} {S}\n")
-        Gt[i] = G
-        Ut[i] = U
-        St[i] = S
 
-# Calculations with electronic partition function
-with open('Funcion_Electronica.dat', 'w') as f:
-    f.write("          G                          U                         S\n")
-    for i in range(8):
-        G = ((-kb * T * np.log(Qe[i])) + (kb * T))
-        U = kb * (T ** 2) * (1 / Qe[i]) * 10e9
-        S = N / 1000 * kb * T * ((1 / Qe[i]) + (kb * np.log(Qe[i])))
-        f.write(f"{G} {U} {S}\n")
-        Ge[i] = G
-        Ue[i] = U
-        Se[i] = S
+def entropy(q, N):
+    return N * (3 / 2 * k_B + k_B * np.log(q))
 
-# Calculations with both translational and electronic partition functions
-with open('Funcion_Traslacional+Electronica.dat', 'w') as f:
-    f.write("          G                          U                         S\n")
-    for i in range(8):
-        G = 8.31e-3 * T * np.log((((((2 * pi * m[i] * kb * T) / (h ** 2)) ** (1.5)) * V) * Qe[i]) / N)
-        U = Ue[i] + Ut[i]
-        S = Se[i] + St[i]
-        f.write(f"{G} {U} {S}\n")
-        Gte[i] = G
-        Ute[i] = U
-        Ste[i] = S
+
+def gibbs(q, N, T):
+    return N * k_B * T * (1 - np.log(q))
+
+
+def electronic_partition(ge):
+    return ge
+
+
+def entropy_ele(q_ele):
+    return R * np.log(q_ele)
+
+
+def entropy_both(q_tras, q_ele):
+    return 5 / 2 * R + R * np.log(q_tras * q_ele / N_A)
+
+
+def main():
+    T = 298  # Standard Temperature (K)
+    P = 10 ** 5  # Standard pressure (Pa)
+    V = k_B * T / P  # Standard volume (m^3)
+    N = N_A  # Number of particles
+
+    print('Con este programa calculas U_298, S_298, G_298.')
+    atom_in = input('Ingrese el átomo: ')
+    m_in = float(input('Ingrese la masa: '))  # Convert to float
+    ge_in = float(input('Ingrese la degenerancia del estado electrónico: '))  # Convert to float
+
+    print('--------------------------------------------------------')
+    print('Función de partición traslacional')
+    m = mass_of_an_atom(m_in)
+    q_tras = translational_partition(m, T, V)
+    print('q_tras = ' + str(q_tras))
+    print('\nU°_298 = ' + str(internal_energy(T) / 1000) + 'kJ')
+    print('S°_298 = ' + str(entropy(q_tras, N)) + 'unidad')
+    print('G°_298 = ' + str(gibbs(q_tras, N, T)))
+
+
+main()

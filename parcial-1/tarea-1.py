@@ -1,56 +1,52 @@
-import numpy as np
+# Python code to extract the orbital term from an electronic configuration
 
-# Constants
-pi = np.pi                  # Pi
-T = 298                     # Standard Temperature (K)
-P = 10**5                   # Standard pressure (Pa)
-h = 6.62607015e-34          # Plank's constant (J s)
-k_B = 1.380649e-23          # Boltzmann constant (J / K)
-N_A = 6.02214076e+23        # Avogadro's Number (1 / mol)
+# Read the electronic configuration.
+electron_config = input("Enter the electronic configuration: ")
 
-R = k_B * N_A               # Ideal gas constant (J / mol K)
-V = k_B * T / P             # Standard volume (m^3)
-U = 3/2 * R * T /1000       # Standard internal energy U_298 (kJ)
+# Find the length of the string.
+len_config = len(electron_config)
 
-print('Standard Volume: ' + str(V) + 'm^3')
-print('Standard internal energy: ' + str(U) + ' kJ\n')
+# Find the term referring to the orbital.
+orbital_start = len_config
+for i in range(len_config-1, -1, -1):
+    if electron_config[i] == ' ':
+        break
+    if electron_config[i] == '^':
+        orbital_start = i - 1
+        break
 
+# Extract the last term (orbital).
+last_term = electron_config[orbital_start:len_config]
 
-# He, Ne, Al, Ba, Ar, Be, Br, C
-elements = ['He', 'Ne', 'Al', 'Ba', 'Ar', 'Be', 'Br', 'C']
+# Print the last term (orbital).
+print("The orbital is:", last_term)
 
-# List of molar masses of the elements listed (g / mol)
-molar_masses = [4.00260128, 20.18004638, 26.98153841, 137.32667172, 39.94779856, 9.01218306, 79.90432616, 12.01063556]
+# Python code to determine and print the degeneracy of the last orbital term
 
-# List of degeneracies (ge1 = q_ele)
-degeneracies = [1, 1, 2, 1, 1, 1, 2, 1]
+# Define the degeneracy for each orbital configuration
+degeneracy = {
+    's^2': 1,
+    'p^6': 1,
+    'd^10': 1,
+    'p^2': 1,
+    'd^4': 1,
+    'p^1': 2,
+    'p^5': 4,
+    'd^1': 4,
+    'd^3': 4,
+    'p^4': 5,
+    'd^2': 5,
+    'p^3': 6,
+    'd^9': 6,
+    'd^8': 9,
+    'd^6': 9,
+    'd^7': 10,
+    'd^5': 10
+}
 
+# Find the degeneracy of the last orbital term
+if last_term in degeneracy:
+    print("The degeneracy in this configuration is", degeneracy[last_term])
+else:
+    print("Degeneracy for this configuration is not defined.")
 
-def mass_of_an_atom (m: float):
-    return m / N_A / 1000  # (kg / atom)
-
-def translational_partition(m):
-    return ((2 * pi * m * k_B * T) / (h**2))**(3/2) * V
-
-def entropy_tras(q_tras):
-    return N_A* (3/2 * k_B + k_B * np.log(q_tras))
-
-def entropy_ele(q_ele):
-    return R * np.log(q_ele)
-
-def entropy_both(q_tras, q_ele):
-    return 5/2 * R + R * np.log(q_tras * q_ele / N_A)
-
-def gibbs(q):
-    return k_B*T*(1-np.log(q))
-
-for i in range(len(elements)):
-    print('Element:\t' + elements[i])
-    mass = mass_of_an_atom(molar_masses[i])
-    print('Mass of an atom =\t' + str(mass) + ' kg')
-    Q = translational_partition(mass)
-    print('q_tras = \t' + str(Q))
-    print('S_tras = \t' + str(entropy_tras(Q)))
-    print('S_ele = \t' + str(entropy_ele(degeneracies[i])))
-    print('S_both = \t' + str(entropy_both(Q, degeneracies[i])))
-    print('G_298 = \t' + str(gibbs(Q)) + '\n')

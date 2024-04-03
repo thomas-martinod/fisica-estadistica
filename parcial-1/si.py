@@ -58,6 +58,7 @@ class Tras:
         print("---------------------------------------------------------------------------------------------------------------")
         print('Para el gas de ' + name + ' las propiedades termodinámicas usando la función de partición traslacional son: \n' )
 
+        print(self.V)
         print(format_string.format("q", self.q, prec=num_decimals, unit=energy_unit))
         print(format_string.format("U", self.U, prec=num_decimals, unit=energy_unit))
         print(format_string.format("S", self.S, prec=num_decimals, unit=entropy_unit))
@@ -73,11 +74,11 @@ class Ele:
         self.N = N
         self.T = T
         self.U = 0
-        self.S = self.N * k_B * self.T * np.log(self.ge1 * np.exp(1) / self.N)
-        self.A = 0
-        self.G = 0
+        self.S = self.N * k_B * np.log(self.ge1 * np.exp(1) / self.N)
+        self.A = -self.N * k_B * self.T * np.log(self.ge1 * np.exp(1) / self.N)
+        self.G = -self.N * k_B * self.T * np.log(self.ge1 * np.exp(1) / self.N)
         self.H = 0
-        self.mu = 0
+        self.mu = -k_B * self.T * np.log(self.ge1 / self.N)
 
     def get_q(self):
         return self.ge1
@@ -115,7 +116,7 @@ class Ele:
 
 class Tras_and_ele:
     def __init__(self, m, N, T, P, ge1) -> None:
-        self.m = m / 1000 / N_A  # En kg
+        self.m = (m / 1000) / N_A  # En kg
         self.N = N
         self.T = T
         self.P = P
@@ -123,7 +124,7 @@ class Tras_and_ele:
         self.q_tras = (2 * pi * self.m * k_B * self.T / h**2)**(3/2) * self.V
         self.q_ele = ge1
         self.U = 1.5 * self.N * k_B * self.T
-        self.S = self.N * k_B * np.log(self.q_tras * self.q_ele * np.exp(2.5) / self.N)
+        self.S = 2.5 * self.N * k_B + self.N * k_B * np.log(self.q_tras * self.q_ele / self.N)
         self.A = -self.N * k_B * self.T * (np.log(self.q_tras * self.q_ele / self.N) + 1)
         self.G = -self.N * k_B * self.T * np.log(self.q_tras * self.q_ele / self.N)
         self.H = 2.5 * self.N * k_B * self.T
@@ -171,7 +172,7 @@ def main():
     elem = input('Ingrese el elemento del gas monoatómico a considerar: ')
 
     aux_P = input('Ingrese la presión del sistema en [bar] (al ingresar \'st\' se asumen condiciones estándar): ')
-    P_sys = 10e5 if aux_P == 'st' else float(aux_P) * 10e5
+    P_sys = 101325 if aux_P == 'st' else float(aux_P) * 10e5
 
     aux_T = input('Ingrese la temperatura del sistema en [K] (al ingresar \'st\' se asumen condiciones estándar): ')
     T_sys = 298.15 if aux_T == 'st' else float(aux_T)
@@ -201,4 +202,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 

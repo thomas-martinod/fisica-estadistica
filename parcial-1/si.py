@@ -27,7 +27,7 @@ class Tras:
         self.V = self.N * k_B * self.T / self.P
         self.q = (2 * pi * self.m * k_B * self.T / h**2)**(3/2) * self.V
         self.U = 1.5 * self.N * k_B * self.T
-        self.S = self.N * k_B * (2.5 + np.log(self.q / self.N))
+        self.S = self.N * k_B * np.log(self.q * np.exp(2.5) / self.N)
         self.A = -self.N * k_B * self.T * (np.log(self.q / self.N) + 1)
         self.G = -self.N * k_B * self.T * np.log(self.q / self.N)
         self.H = 2.5 * self.N * k_B * self.T
@@ -58,7 +58,6 @@ class Tras:
         print("---------------------------------------------------------------------------------------------------------------")
         print('Para el gas de ' + name + ' las propiedades termodinámicas usando la función de partición traslacional son: \n' )
 
-        print(self.V)
         print(format_string.format("q", self.q, prec=num_decimals, unit=energy_unit))
         print(format_string.format("U", self.U, prec=num_decimals, unit=energy_unit))
         print(format_string.format("S", self.S, prec=num_decimals, unit=entropy_unit))
@@ -122,19 +121,19 @@ class Tras_and_ele:
         self.P = P
         self.V = self.N * k_B * self.T / self.P
         self.q_tras = (2 * pi * self.m * k_B * self.T / h**2)**(3/2) * self.V
-        self.q_ele = ge1
+        self.ge1 = ge1
         self.U = 1.5 * self.N * k_B * self.T
-        self.S = 2.5 * self.N * k_B + self.N * k_B * np.log(self.q_tras * self.q_ele / self.N)
-        self.A = -self.N * k_B * self.T * (np.log(self.q_tras * self.q_ele / self.N) + 1)
-        self.G = -self.N * k_B * self.T * np.log(self.q_tras * self.q_ele / self.N)
+        self.S = self.N * k_B * np.log(self.q_tras * self.ge1 * np.exp(2.5) / self.N)
+        self.A = -self.N * k_B * self.T * (np.log(self.q_tras * self.ge1 / self.N) + 1)
+        self.G = -self.N * k_B * self.T * np.log(self.q_tras * self.ge1 / self.N)
         self.H = 2.5 * self.N * k_B * self.T
-        self.mu = - k_B * self.T * np.log(self.q_tras * self.q_ele / self.N)
+        self.mu = - k_B * self.T * np.log(self.q_tras * self.ge1 / self.N)
 
     def get_q_tras(self):
         return self.q_tras
 
-    def get_q_ele(self):
-        return self.q_ele
+    def get_ge1(self):
+        return self.ge1
 
     def get_U(self):
         return self.U
@@ -159,7 +158,7 @@ class Tras_and_ele:
         print(f'Para el gas de {name}, las propiedades termodinámicas usando la función de partición traslacional y electrónica son:\n')
 
         print(format_string.format("q_tras", self.get_q_tras(), prec=num_decimals, unit=energy_unit))
-        print(format_string.format("q_ele", self.get_q_ele(), prec=num_decimals, unit=energy_unit))
+        print(format_string.format("q_ele", self.get_ge1(), prec=num_decimals, unit=energy_unit))
         print(format_string.format("U", self.get_U(), prec=num_decimals, unit=energy_unit))
         print(format_string.format("S", self.get_S(), prec=num_decimals, unit=entropy_unit))
         print(format_string.format("A", self.get_A(), prec=num_decimals, unit=energy_unit))

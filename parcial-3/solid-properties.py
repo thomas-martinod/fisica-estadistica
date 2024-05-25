@@ -113,12 +113,35 @@ def calculate_fermi_velocity(rho):
     return hbar / me * (3 * np.pi**2 * rho)**(1/3)
 
 
-def calculate_chemical_potential(T, Ef):
-    return Ef * (1 - np.pi**2 / 12 * (kB * T / Ef)**2)
+def fixed_point_iteration(f, x0, params, tolerance=1e-8, max_iterations=100):
+    """
+    Solves x = f(x) using the fixed-point iteration method.
+
+    Parameters:
+    f (function): The function for which we are trying to find a fixed point.
+    x0 (float): Initial guess for the fixed point.
+    tolerance (float): The tolerance level for convergence.
+    max_iterations (int): Maximum number of iterations.
+
+    Returns:
+    float: Approximate solution to x = f(x).
+    int: Number of iterations performed.
+    """
+    x_current = x0
+    for iteration in range(max_iterations):
+        x_next = f(x_current, params)
+        if abs(x_next - x_current) < tolerance:
+            return x_next, iteration + 1
+        x_current = x_next
+    raise ValueError(f"Did not converge within {max_iterations} iterations")
 
 
-def calculate_energy(T, Ef):
-    return Ef * (1 + 5 * np.pi**2 / 12 * (kB * T / Ef)**2)
+def chemical_potential(mu, T):
+    return (1 - (np.pi * kB * T)**2 / (12 * mu**2))
+
+
+def internal_energy(E, T):
+    return (1 + 5 * (np.pi * kB * T)**2 / (12 * E**2))
 
 
 def main():
@@ -133,8 +156,8 @@ def main():
 
     Ef_J = calculate_fermi_energy(rho)  # Fermi energy in joules
     Vf = calculate_fermi_velocity(rho)  # Fermi velocity in m/s
-    mu_J = calculate_chemical_potential(T, Ef_J)  # Chemical potential in joules
-    E_J = calculate_energy(T, Ef_J)  # Energy in joules
+    mu_J, it1 = fixed_point_iteration(chemical_potential, Ef_J, T)
+    E_J, it2 = fixed_point_iteration(internal_energy, Ef_J, T)
 
     # Convert energies from joules to eV
     Ef_eV = Ef_J / eV
@@ -143,13 +166,13 @@ def main():
 
     # Print results in two columns with formatted alignment
     print('-------------------------------------------------------------------------\n')
+    print(Ef_J)
     print(f"{'Volume:':<40}{V:.4e} m^3")
     print(f"{'Electron Density:':<40}{rho:.4e} electrons/m^3")
     print(f"{'Fermi Energy:':<40}{Ef_eV:.4e} eV")
     print(f"{'Fermi Velocity:':<40}{Vf:.4e} m/s")
     print(f"{'Chemical Potential at T = ' + str(T) + ' K:':<40}{mu_eV:.4e} eV")
     print(f"{'Energy at T = ' + str(T) + ' K:':<40}{E_eV:.4e} eV")
-    print(f"{'Chemical Potential (eV/mol):':<40}{mu_eV:.4e} eV/mol\n")
     print('-------------------------------------------------------------------------\n')
 
 main()
